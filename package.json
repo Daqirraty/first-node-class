@@ -1,0 +1,23 @@
+{
+  "name": "first-node-class",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "engine":{
+    "node":"18.18.2",
+    "npm":"9.8.1"
+  },
+  "scripts": {
+    "start":"node index.js",
+    "dev":"nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "nodemon": "^3.1.0"
+  }
+}
