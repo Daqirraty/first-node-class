@@ -3,74 +3,243 @@ require("dotenv").config();
 const express = require("express");
 // Create an instance of express
 const app = express();
+// call up the router middleware from express
+const router = express.Router();
 // create a port to spin server on
 const PORT = process.env.PORT || 3000;
 
 // Use the express middleware "use"
 app.use(express.json());
+//Built-in middleware
+app.use(express.urlencoded({ extended: true }));
+
+// Application-level middleware
+const loggerMiddleware = (req, res, next) => {
+  console.log(`${new Date()} —-- Request [${req.method}] [${req.url}]`)
+  next();
+}
+app.use (loggerMiddleware);
+
+// app.get("/api/test ", function (req, res) {
+//   res.status(200).json({
+//     status: "success",
+//     message: "Welcome to the landing page.",
+//   });
+// });
+
+//Third party middleware
+
+// Router-level middleware
+
+const fakeAuth = (req, res, next) => {
+  const authStatus = false;
+  if (authStatus) {
+    console.log("User authStatus : ", authStatus);
+    next();
+  } else {
+    res.status(401);
+    throw new Error("User is not authorized");
+  }
+};
+
+app.use("/api/test", router);
+const getUsers = (req, res) => {
+  res.json({ message: "Get all users" });
+};
+const createUser = (req, res) => {
+  res.json({ message: "Create new user" });
+};
+
+router.use(fakeAuth);
+router.route("/").get(getUsers).post(createUser);
+
+
+
+//Error-handling middleware
+const errorHandler = (err, req, res, next) =>{
+  const statusCode = res.statusCode ? statusCode : 500;
+  res.status (statusCode);
+  switch (statusCode){
+    case 401:
+      res.json({
+        message: "Unauthorized"});
+      break;
+      case 404:
+      res.json({
+        message: "Bad request"})
+      break;
+      case 500:
+      res.json({
+        message: "Server error"});
+      break;
+      default:
+        break;
+      }
+
+  }
+  app.use(errorHandler)
 
 //Use an event listener to listen
 app.listen(PORT, () => console.log(`Server is running on ${PORT}`));
 
-let datas = [
-  { id: 1, name: "John" },
-  { id: 2, name: "Jane" },
-  { id: 3, name: "Alice" },
-  { id: 4, name: "Bob" },
-];
+// let datas = [
+//   { id: 1, surname: "John", othername: "John", email: "John@gmail.com" },
+//   { id: 2, surname: "Jane", othername: "Josfvhn", email: "Johnfvf@gmail.com" },
+//   { id: 3, surname: "Alice", othername: "Jofvfhn", email: "Johnfv@gmail.com" },
+//   { id: 4, surname: "Bob", othername: "Johvfn", email: "Johnfvf@gmail.com" },
+// ];
 
-// This is the base endpoint for our API
-// app.get(path, callback_function)
-app.get("/", function (req, res) {
-  res.status(200).json({
-    status: "success",
-    message: "Welcome to the landing page.",
-  });
-});
+// // This is the base endpoint for our API
+// // app.get(path, callback_function)
+// app.get("/", function (req, res) {
+//   res.status(200).json({
+//     status: "success",
+//     message: "Welcome to the landing page.",
+//   });
+// });
 
-app.get("/users", function (req, res) {
-  res.status(200).json({
-    status: "success",
-    message: "Users fetched successfully",
-    data: datas,
-  });
-});
+// // FETCH ALL USERS
+// app.get("/users", function (req, res) {
+//   res.status(200).json({
+//     status: "success",
+//     message: "Users fetched successfully",
+//     data: datas,
+//   });
+// });
 
-app.post("/users/create", function (req, res) {
-  const firstname = req.body.firstname;
-  const othername = req.body.othername;
-  const email = req.body.email;
+// // Create New User
+// app.post("/users/create", function (req, res) {
+//   const surname = req.body.surname;
+//   const othername = req.body.othername;
+//   const email = req.body.email;
 
-//   const {firstname ,othername, email} = req.body;
+//   //   const {firstname ,othername, email} = req.body;
+//   //   const {body} = req;
 
-//   const {body} = req;
+//   datas.push({
+//     id: datas.length + 1,
+//     surname: surname,
+//     othername: othername,
+//     email: email,
+//   });
+
+//   const displayNewUser = datas.length - 1;
+
+//   res.status(200).json({
+//     status: "success",
+//     message: "User account created successfully",
+//     data: datas[displayNewUser],
+//   });
+// });
+
+// // Get Single Users
+// app.get("/user/:id", function (req, res) {
+//   const userId = parseInt(req.params.id); // Extract user ID from request params
+//   const data = datas.find((data) => data.id === userId); // Find user by ID
+
+//   console.log("rrrrrr: ", data);
+
+//   if (!data) {
+//     res.status(404).send("User not found");
+//   }
+//   //else {
+//   //   res.json(data); // Send user data as JSON response
+//   // }
+//   // Either of the response
+//   res.status(200).json({
+//     status: "success",
+//     message: "Single user gotten successfully",
+//     data: data,
+//   });
+// });
+
+// // PATCH UPDATE SPECIFIC USER DETAIL FIELD
+// app.patch("/user/update/:id", (req, res) => {
+//   const { id } = req.params;
+//   console.log("update user", id);
+//   const userId = parseInt(id);
+
+//   const { surname, othername, email } = req.body;
+
+//   if (!surname || !othername || !email) {
+//     res.json({
+//       status: "error",
+//       message: "All fields are required",
+//     });
+//   }
+//   const filteredData = datas.filter((data) => data.id === userId);
+//   console.log("filteredData", filteredData);
+
+//   // USING FIND return an object {}
+//   // filteredData.surname = surname
+//   // filteredData.othername = othername
+//   // filteredData.email = email
+
+//   // USINF FILTER RETURNS AN ARRAY []
+//   filteredData[0].surname = surname;
+//   filteredData[0].othername = othername;
+//   filteredData[0].email = email;
+
+//   res.json({
+//     status: "success",
+//     message: "User Updated ",
+//     data: datas,
+//   });
+// });
+
+// // PUT UPDATE ALL USER DETAILS FIELD
+// app.put("/user/update-all/:id", (req, res) => {
+//   const userId = parseInt(req.params.id);
+//   const { surname, othername, email } = req.body;
+
+//   // Find the user by ID
+//   const userInfo = datas.filter((data) => data.id === userId);
+//   console.log("userInfo", userInfo);
+
+//   // If user not found, send 404 Not Found response
+//   if (!userInfo) {
+//     return res.status(404).json({ error: "User not found" });
+//   }
+
+//   // Update user details
+//   userInfo[0].surname = surname;
+//   userInfo[0].othername = othername;
+//   userInfo[0].email = email;
+
+//   // Send success response
+//   res.json({ message: "User details updated successfully", user: datas });
+// });
+
+
+// // DELETE SINGLE USER DETAILS
+// app.delete('/users/delete/:id', (req, res) => {
+//   const userId = parseInt(req.params.id);
+
+//   // Find the index of the user by ID
+//   const userIndex = datas.findIndex(user => user.id === userId);
+//   console.log("objectrrr: ", userIndex)
+
+//   // If user not found, send 404 Not Found response
+//   if (userIndex === -1) {
+//       return res.status(404).json({ error: 'User not found' });
+//   }
+
+//   // Remove the user from the array
+//   datas.splice(userIndex, 1);
+
+//   // Send success response
+//   res.json({ message: 'User deleted successfully' });
+// });
+
+
+// // DELETE ALL USER 
+// app.delete('/users/delete/:id', (req, res) => {
+
+//   users = [];
+
+//   // Send success response
+//   res.json({ message: 'All user details deleted successfully' });
+// });
 
 
 
-  datas.push({
-    id: datas.length+1,
-    firstname: firstname,
-    othername: othername,
-    email: email,
-  });
-  res.status(200).json({
-    status: "success",
-    message: "User account created successfully",
-    data: datas,
-  });
-});
-
-app.get("/user/:id", function (req, res) {
-  const userId = parseInt(req.params.id); // Extract user ID from request params
-  const data = datas.find((data) => data.id === userId); // Find user by ID
-  if (!data) {
-    res.status(404).send("User not found");
-  } else {
-    res.json(data); // Send user data as JSON response
-  }
-  res.status(200).json({
-    status: "success",
-    message: "Single user gotten successfully",
-    data: data,
-  });
-});
